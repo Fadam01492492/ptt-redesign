@@ -1,0 +1,19 @@
+{% load forum_extras humanize %}
+<article class="post-card">
+  <div class="post-card-body">
+    <div class="post-meta-top">
+      {% if show_board %}<a class="board-tag" href="{{ post.board.get_absolute_url }}">{{ post.board.name }}</a>{% endif %}
+      <span class="prefix prefix-{{ post.prefix }}">{{ post.prefix }}</span>
+      <span class="muted">{{ post.author.username }} · {{ post.created_at|naturaltime }}</span>
+    </div>
+    <h3 class="post-title"><a href="{{ post.get_absolute_url }}">{% if q %}{{ post.title|highlight:q }}{% else %}{{ post.title }}{% endif %}</a></h3>
+    <p class="post-excerpt">{% if q %}{{ post.content|excerpt:90|highlight:q }}{% else %}{{ post.content|excerpt:90 }}{% endif %}</p>
+    <div class="post-stats">
+      <span class="stat-push" title="推">▲ {{ post.push_total }}</span>
+      {% if post.boo_total %}<span class="stat-boo" title="噓">▼ {{ post.boo_total }}</span>{% endif %}
+      <span title="推文數">💬 {{ post.comment_total }}</span>
+      <span title="瀏覽數">👁 {{ post.views|intcomma }}</span>
+    </div>
+  </div>
+  {% if post.image_url %}<a href="{{ post.get_absolute_url }}" class="post-thumb"><img src="{{ post.image_url }}" alt="" loading="lazy"></a>{% endif %}
+</article>

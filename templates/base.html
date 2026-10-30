@@ -1,0 +1,105 @@
+{% load static %}<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}批踢踢 Redesign{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-label="開啟選單">☰</button>
+  <a href="{% url 'home' %}" class="logo"><span class="logo-mark">批</span><span class="logo-text">批踢踢<small>Redesign</small></span></a>
+  <form action="{% url 'search' %}" method="get" class="top-search" role="search">
+    <span class="search-icon">⌕</span>
+    <input type="search" name="q" value="{{ q|default:'' }}" placeholder="搜尋看板、文章或作者…" aria-label="全站搜尋">
+  </form>
+  <nav class="top-actions">
+    {% if user.is_authenticated %}
+      <a href="{% url 'post_create' %}" class="btn btn-primary btn-sm hide-sm">＋ 發文</a>
+      <details class="user-menu">
+        <summary><span class="avatar">{{ user.username|first|upper }}</span><span class="hide-sm">{{ user.username }}</span></summary>
+        <div class="menu-pop">
+          <a href="{% url 'my_favorites' %}">★ 我的收藏與紀錄</a>
+          {% if user.is_staff %}<a href="/admin/">⚙ 管理後台</a>{% endif %}
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">登出</button></form>
+        </div>
+      </details>
+    {% else %}
+      <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-ghost btn-sm">登入</a>
+      <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">註冊</a>
+    {% endif %}
+  </nav>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <nav class="side-nav">
+      <a href="{% url 'home' %}" class="{% if request.path == '/' %}active{% endif %}"><i>⌂</i>首頁</a>
+      <a href="{% url 'board_list' %}" class="{% if request.path == '/boards/' %}active{% endif %}"><i>▦</i>分類看板</a>
+      <a href="{% url 'search' %}" class="{% if request.path == '/search/' %}active{% endif %}"><i>⌕</i>進階搜尋</a>
+      <a href="{% url 'my_favorites' %}" class="{% if request.path == '/me/' %}active{% endif %}"><i>★</i>我的收藏</a>
+    </nav>
+
+    {% if user.is_authenticated %}
+      <div class="side-group">
+        <h4>我的最愛</h4>
+        {% for b in nav_favorites %}
+          <a href="{{ b.get_absolute_url }}" class="side-board">★ {{ b.name }} <small>{{ b.zh_name }}</small></a>
+        {% empty %}
+          <p class="muted small">還沒有收藏的看板，進入看板按「☆ 收藏」即可加入。</p>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="side-cta">
+        <strong>登入解鎖更多功能</strong>
+        <p>收藏看板、推文、發文、最近瀏覽紀錄</p>
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-block btn-sm">免費註冊</a>
+      </div>
+    {% endif %}
+
+    <div class="side-group">
+      <h4>熱門看板</h4>
+      {% for b in nav_hot_boards %}
+        <a href="{{ b.get_absolute_url }}" class="side-board"><span class="rank">{{ forloop.counter }}</span>{{ b.name }} <small>{{ b.zh_name }}</small></a>
+      {% endfor %}
+    </div>
+
+    <div class="side-group">
+      <h4>看板分類</h4>
+      <div class="chip-wrap">
+        {% for c in nav_categories %}<a class="chip" href="{% url 'board_list' %}?cat={{ c.slug }}" style="--chip:{{ c.color }}">{{ c.name }}</a>{% endfor %}
+      </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    {% if crumbs %}
+      <nav class="breadcrumb" aria-label="目前位置">
+        {% for label, url in crumbs %}
+          {% if url %}<a href="{{ url }}">{{ label }}</a><span class="sep">›</span>{% else %}<span class="current">{{ label|truncatechars:40 }}</span>{% endif %}
+        {% endfor %}
+      </nav>
+    {% endif %}
+
+    {% if messages %}
+      <div class="toasts">
+        {% for m in messages %}<div class="toast toast-{{ m.tags }}">{{ m }}<button class="toast-x" aria-label="關閉">×</button></div>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="site-footer">
+      批踢踢 Redesign｜第 14 組 WEB 期中專題 · 本站為 PTT 介面重新設計之課程示範，非 PTT 官方網站，所有文章與帳號皆為示範資料。
+    </footer>
+  </main>
+</div>
+
+{% block fab %}{% endblock %}
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

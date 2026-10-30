@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}我的收藏｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>我的收藏與紀錄</h1>
+  <p class="muted">管理常看的看板，快速回到最近讀過的文章。</p>
+</div>
+
+<section class="section">
+  <h2 class="section-title">收藏看板（{{ favs|length }}）</h2>
+  <div class="board-table">
+    {% for f in favs %}
+      <div class="board-row">
+        <a href="{{ f.board.get_absolute_url }}" class="board-row-main">
+          <span class="chip chip-solid" style="--chip:{{ f.board.category.color }}">{{ f.board.category.name }}</span>
+          <div><strong>{{ f.board.name }}</strong> <span class="zh">{{ f.board.zh_name }}</span>
+            <p class="muted small">收藏於 {{ f.created_at|date:"Y/m/d" }} · {{ f.post_n }} 篇文章</p></div>
+        </a>
+        <form method="post" action="{% url 'toggle_favorite' f.board.name %}">{% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button class="btn btn-ghost btn-sm">移除</button>
+        </form>
+      </div>
+    {% empty %}
+      <div class="empty">尚未收藏看板。<a href="{% url 'board_list' %}">前往分類看板 ›</a></div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="dash-grid">
+  <section class="section">
+    <h2 class="section-title">最近瀏覽</h2>
+    <div class="card">
+      {% for h in recent %}
+        <a href="{{ h.post.get_absolute_url }}" class="recent-item">
+          <span class="board-tag">{{ h.post.board.name }}</span><span class="recent-title">{{ h.post.title }}</span>
+          <small class="muted">{{ h.viewed_at|naturaltime }}</small>
+        </a>
+      {% empty %}<p class="muted small">還沒有瀏覽紀錄。</p>{% endfor %}
+    </div>
+  </section>
+  <section class="section">
+    <h2 class="section-title">我發表的文章</h2>
+    <div class="card">
+      {% for p in my_posts %}
+        <a href="{{ p.get_absolute_url }}" class="recent-item">
+          <span class="board-tag">{{ p.board.name }}</span><span class="recent-title">[{{ p.prefix }}] {{ p.title }}</span>
+          <small class="stat-push">▲ {{ p.push_total }}</small>
+        </a>
+      {% empty %}<p class="muted small">還沒有發過文。<a href="{% url 'post_create' %}">發第一篇 ›</a></p>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

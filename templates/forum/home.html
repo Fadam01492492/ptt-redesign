@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}批踢踢 Redesign｜新手也能輕鬆逛的 PTT{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>今天想聊什麼？</h1>
+  <p>不用記指令、不用背看板英文名稱，從搜尋或熱門看板直接開始。</p>
+  <form action="{% url 'search' %}" method="get" class="hero-search">
+    <input type="search" name="q" placeholder="搜尋看板、文章、關鍵字…" aria-label="搜尋" autofocus>
+    <button class="btn btn-primary">搜尋</button>
+  </form>
+  <div class="hot-keywords">
+    <span>熱門搜尋</span>
+    {% for k in hot_keywords %}<a href="{% url 'search' %}?q={{ k|urlencode }}" class="chip">{{ k }}</a>{% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>熱門看板</h2>
+    <a href="{% url 'board_list' %}" class="link">看全部分類 ›</a>
+  </div>
+  <div class="board-grid">
+    {% for b in hot_boards %}
+      <a href="{{ b.get_absolute_url }}" class="board-card">
+        <span class="chip chip-solid" style="--chip:{{ b.category.color }}">{{ b.category.name }}</span>
+        <h3>{{ b.name }} <small>{{ b.zh_name }}</small></h3>
+        <p>{{ b.description }}</p>
+        <div class="board-card-foot"><span>{{ b.post_n }} 篇文章</span><span>{{ b.heat }} 則推文</span></div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>本週熱門文章</h2>
+    <a href="{% url 'search' %}?sort=hot&period=week" class="link">更多 ›</a>
+  </div>
+  <div class="post-list">
+    {% for post in hot_posts %}{% include "forum/_post_card.html" with show_board=True %}{% endfor %}
+  </div>
+</section>
+
+<section class="guest-banner">
+  <div>
+    <h3>每天都看同幾個板？</h3>
+    <p>註冊後可以收藏看板，首頁會變成你的個人儀表板，還能推文與發文。</p>
+  </div>
+  <div class="guest-banner-actions">
+    <a href="{% url 'signup' %}" class="btn btn-primary">免費註冊</a>
+    <a href="{% url 'login' %}" class="btn btn-ghost">已有帳號，登入</a>
+  </div>
+</section>
+{% endblock %}

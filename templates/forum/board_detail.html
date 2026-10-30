@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load forum_extras %}
+{% block title %}{{ board.name }} {{ board.zh_name }}｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="board-head">
+  <div>
+    <span class="chip chip-solid" style="--chip:{{ board.category.color }}">{{ board.category.name }}</span>
+    <h1>{{ board.name }} <span class="zh">{{ board.zh_name }}</span></h1>
+    <p class="muted">{{ board.description }}</p>
+  </div>
+  <div class="board-head-actions">
+    {% if user.is_authenticated %}
+      <form method="post" action="{% url 'toggle_favorite' board.name %}">{% csrf_token %}
+        <button class="fav-btn {% if is_fav %}on{% endif %}" data-board="{{ board.name }}">{% if is_fav %}★ 已收藏{% else %}☆ 收藏{% endif %}</button>
+      </form>
+      <a href="{% url 'post_create' %}?board={{ board.name }}" class="btn btn-primary">＋ 發文</a>
+    {% else %}
+      <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-ghost" title="登入後可收藏與發文">登入以收藏 / 發文</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="tabs">
+    <a href="{% qs tab='latest' %}" class="tab {% if tab != 'hot' %}active{% endif %}">最新文章</a>
+    <a href="{% qs tab='hot' %}" class="tab {% if tab == 'hot' %}active{% endif %}">熱門文章</a>
+  </div>
+  <form method="get" class="inline-form">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <select name="prefix" onchange="this.form.submit()">
+      <option value="">全部分類</option>
+      {% for p in prefixes %}<option value="{{ p }}" {% if p == prefix %}selected{% endif %}>[{{ p }}]</option>{% endfor %}
+    </select>
+    <input type="search" name="q" value="{{ q }}" placeholder="搜尋板內文章…">
+    <button class="btn btn-ghost btn-sm">搜尋</button>
+  </form>
+</div>
+
+{% if q or prefix %}<p class="muted small result-note">篩選結果：{{ page.paginator.count }} 篇{% if q %}，關鍵字「{{ q }}」{% endif %}{% if prefix %}，分類 [{{ prefix }}]{% endif %} · <a href="?tab={{ tab }}">清除篩選</a></p>{% endif %}
+
+<div class="post-list">
+  {% for post in page %}{% include "forum/_post_card.html" with show_board=False %}
+  {% empty %}<div class="empty">這裡還沒有文章{% if q %}符合「{{ q }}」{% endif %}。</div>{% endfor %}
+</div>
+{% include "forum/_pagination.html" %}
+{% endblock %}
+
+{% block fab %}
+{% if user.is_authenticated %}<a href="{% url 'post_create' %}?board={{ board.name }}" class="fab" aria-label="發文">✎<span>發文</span></a>{% endif %}
+{% endblock %}

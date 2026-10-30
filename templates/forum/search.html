@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{% if q %}「{{ q }}」的搜尋結果{% else %}進階搜尋{% endif %}｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="search-layout">
+  <aside class="filter-panel card">
+    <form method="get" id="filterForm">
+      <h3 class="card-title">篩選條件</h3>
+      <label class="field"><span>關鍵字</span><input type="search" name="q" value="{{ q }}" placeholder="例：面試、年終"></label>
+
+      <fieldset class="field">
+        <legend>時間範圍</legend>
+        <label class="radio"><input type="radio" name="period" value="week" {% if period == 'week' %}checked{% endif %}> 近一週</label>
+        <label class="radio"><input type="radio" name="period" value="month" {% if period == 'month' %}checked{% endif %}> 近一個月</label>
+        <label class="radio"><input type="radio" name="period" value="year" {% if period == 'year' %}checked{% endif %}> 近一年</label>
+        <label class="radio"><input type="radio" name="period" value="all" {% if period == 'all' %}checked{% endif %}> 不限時間</label>
+      </fieldset>
+
+      <label class="field"><span>看板</span>
+        <select name="board">
+          <option value="">全部看板</option>
+          {% for b in all_boards %}<option value="{{ b.name }}" {% if b.name == board_name %}selected{% endif %}>{{ b.name }}（{{ b.zh_name }}）</option>{% endfor %}
+        </select>
+      </label>
+
+      <label class="field"><span>文章分類</span>
+        <select name="prefix">
+          <option value="">全部分類</option>
+          {% for v, label in prefix_choices %}<option value="{{ v }}" {% if v == prefix %}selected{% endif %}>[{{ label }}]</option>{% endfor %}
+        </select>
+      </label>
+
+      <fieldset class="field">
+        <legend>排序方式</legend>
+        <label class="radio"><input type="radio" name="sort" value="relevance" {% if sort == 'relevance' %}checked{% endif %}> 相關度</label>
+        <label class="radio"><input type="radio" name="sort" value="latest" {% if sort == 'latest' %}checked{% endif %}> 最新發布</label>
+        <label class="radio"><input type="radio" name="sort" value="hot" {% if sort == 'hot' %}checked{% endif %}> 熱門度</label>
+      </fieldset>
+
+      <button class="btn btn-primary btn-block">套用篩選</button>
+      <a href="{% url 'search' %}" class="btn btn-ghost btn-block btn-sm">清除全部</a>
+    </form>
+  </aside>
+
+  <section>
+    <div class="page-head">
+      <h1>{% if q %}「<mark>{{ q }}</mark>」的搜尋結果{% else %}全部文章{% endif %} <small class="muted">共 {{ total }} 筆</small></h1>
+    </div>
+    {% if matched_boards %}
+      <div class="matched-boards"><span class="muted small">相關看板</span>
+        {% for b in matched_boards %}<a href="{{ b.get_absolute_url }}" class="chip">{{ b.name }} {{ b.zh_name }}</a>{% endfor %}
+      </div>
+    {% endif %}
+    <div class="post-list">
+      {% for post in page %}{% include "forum/_post_card.html" with show_board=True %}
+      {% empty %}
+        <div class="empty">
+          找不到符合條件的文章 😢<br>
+          <span class="small">試試：放寬時間範圍、改成「全部看板」，或換個關鍵字。</span>
+        </div>
+      {% endfor %}
+    </div>
+    {% include "forum/_pagination.html" %}
+  </section>
+</div>
+{% endblock %}

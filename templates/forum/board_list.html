@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}分類看板｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{% if current %}{{ current.name }}看板{% else %}分類看板{% endif %}</h1>
+  <p class="muted">每個看板都附中文名稱與說明，看不懂英文板名也沒關係。</p>
+</div>
+
+<div class="filter-bar">
+  <div class="chip-wrap">
+    <a href="{% url 'board_list' %}" class="chip {% if not current %}chip-active{% endif %}">全部</a>
+    {% for c in nav_categories %}
+      <a href="?cat={{ c.slug }}" class="chip {% if current == c %}chip-active{% endif %}" style="--chip:{{ c.color }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+  <form method="get" class="inline-form">
+    {% if current %}<input type="hidden" name="cat" value="{{ current.slug }}">{% endif %}
+    <input type="search" name="q" value="{{ q }}" placeholder="找看板（例：股票、Stock）">
+    <select name="sort" onchange="this.form.submit()">
+      <option value="hot" {% if sort == 'hot' %}selected{% endif %}>依人氣</option>
+      <option value="name" {% if sort == 'name' %}selected{% endif %}>依名稱</option>
+    </select>
+    <button class="btn btn-ghost btn-sm">篩選</button>
+  </form>
+</div>
+
+<div class="board-table">
+  {% for b in boards %}
+    <div class="board-row">
+      <a href="{{ b.get_absolute_url }}" class="board-row-main">
+        <span class="chip chip-solid" style="--chip:{{ b.category.color }}">{{ b.category.name }}</span>
+        <div>
+          <strong>{{ b.name }}</strong> <span class="zh">{{ b.zh_name }}</span>
+          <p class="muted small">{{ b.description }}</p>
+        </div>
+      </a>
+      <div class="board-row-stats"><span>{{ b.post_n }} 篇</span><span>{{ b.heat }} 推文</span></div>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'toggle_favorite' b.name %}" class="fav-form">{% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="fav-btn {% if b.id in fav_ids %}on{% endif %}" data-board="{{ b.name }}" aria-label="收藏">{% if b.id in fav_ids %}★ 已收藏{% else %}☆ 收藏{% endif %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% empty %}
+    <div class="empty">找不到符合「{{ q }}」的看板。</div>
+  {% endfor %}
+</div>
+{% endblock %}

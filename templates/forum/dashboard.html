@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}個人儀表板｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<section class="dash-head">
+  <div>
+    <h1>個人儀表板</h1>
+    <p class="muted">歡迎回來，{{ user.username }}！</p>
+  </div>
+  <a href="{% url 'post_create' %}" class="btn btn-primary">＋ 發表新文章</a>
+</section>
+
+<section class="section">
+  <h2 class="section-title">我的收藏看板</h2>
+  {% if nav_favorites %}
+    <div class="quick-boards">
+      {% for b in nav_favorites %}
+        <a href="{{ b.get_absolute_url }}" class="quick-board"><strong>{{ b.name }}</strong><small>{{ b.zh_name }}</small></a>
+      {% endfor %}
+      <a href="{% url 'my_favorites' %}" class="quick-board quick-manage"><strong>管理收藏</strong><small>新增 / 移除</small></a>
+    </div>
+  {% else %}
+    <div class="empty">還沒有收藏任何看板。<a href="{% url 'board_list' %}">去分類看板挑幾個 ›</a></div>
+  {% endif %}
+</section>
+
+<div class="dash-grid">
+  <section class="section">
+    <h2 class="section-title">我的看板動態</h2>
+    <div class="post-list">
+      {% for post in feed %}{% include "forum/_post_card.html" with show_board=True %}
+      {% empty %}<div class="empty">收藏看板後，最新文章會出現在這裡。</div>{% endfor %}
+    </div>
+  </section>
+
+  <aside class="dash-side">
+    <section class="card">
+      <h3 class="card-title">最近瀏覽</h3>
+      {% for h in recent %}
+        <a href="{{ h.post.get_absolute_url }}" class="recent-item">
+          <span class="board-tag">{{ h.post.board.name }}</span>
+          <span class="recent-title">{{ h.post.title }}</span>
+          <small class="muted">{{ h.viewed_at|naturaltime }}</small>
+        </a>
+      {% empty %}<p class="muted small">還沒有瀏覽紀錄。</p>{% endfor %}
+    </section>
+    <section class="card">
+      <h3 class="card-title">熱門推薦</h3>
+      {% for post in hot_posts|slice:":5" %}
+        <a href="{{ post.get_absolute_url }}" class="recent-item">
+          <span class="board-tag">{{ post.board.name }}</span>
+          <span class="recent-title">{{ post.title }}</span>
+          <small class="stat-push">▲ {{ post.push_total }}</small>
+        </a>
+      {% endfor %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

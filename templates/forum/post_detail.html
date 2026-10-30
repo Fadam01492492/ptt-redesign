@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load forum_extras humanize %}
+{% block title %}{{ post.title }}｜{{ post.board.name }}{% endblock %}
+{% block content %}
+<div class="article-layout">
+  <div>
+    <a href="{{ post.board.get_absolute_url }}" class="back-link">‹ 返回 {{ post.board.name }} 文章列表</a>
+
+    <article class="article card">
+      <header class="article-head">
+        <span class="prefix prefix-{{ post.prefix }}">{{ post.prefix }}</span>
+        <h1>{{ post.title }}</h1>
+        <div class="article-meta">
+          <span class="avatar avatar-sm">{{ post.author.username|first|upper }}</span>
+          <strong>{{ post.author.username }}</strong>
+          <span class="muted">· {{ post.created_at|date:"Y/m/d H:i" }} · 看板 <a href="{{ post.board.get_absolute_url }}">{{ post.board.name }}</a> · 👁 {{ post.views|add:1|intcomma }}</span>
+        </div>
+      </header>
+      {% if post.image_url %}<img src="{{ post.image_url }}" alt="" class="article-cover">{% endif %}
+      <div class="article-body">{{ post.content|render_content }}</div>
+      <footer class="article-actions">
+        <span class="stat-push">▲ 推 {{ post.push_total }}</span>
+        <span class="stat-boo">▼ 噓 {{ post.boo_total }}</span>
+        <button class="btn btn-ghost btn-sm" data-copy="{{ request.build_absolute_uri }}">🔗 複製連結</button>
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'toggle_favorite' post.board.name %}">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button class="fav-btn {% if is_fav %}on{% endif %}" data-board="{{ post.board.name }}">{% if is_fav %}★ 已收藏看板{% else %}☆ 收藏看板{% endif %}</button>
+          </form>
+        {% endif %}
+      </footer>
+    </article>
+
+    <section class="comments" id="comments">
+      <h2>推文 <span class="muted">({{ post.comment_total }})</span></h2>
+      <div class="comment-grid">
+        {% for c in comments %}
+          <div class="comment comment-{{ c.kind }}">
+            <div class="comment-head">
+              <span class="kind kind-{{ c.kind }}">{{ c.get_kind_display }}</span>
+              <strong>{{ c.author.username }}</strong>
+              <time class="muted">{{ c.created_at|date:"m/d H:i" }}</time>
+            </div>
+            <p>{{ c.content }}</p>
+          </div>
+        {% empty %}
+          <p class="muted">還沒有人推文，來搶頭香吧！</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="comment-box" id="commentBox">
+      {% if user.is_authenticated %}
+        <form method="post" class="comment-form">{% csrf_token %}
+          {{ form.kind }}{{ form.content }}
+          <button class="btn btn-primary">送出</button>
+        </form>
+        {% if form.errors %}<p class="error small">{{ form.content.errors|striptags }}</p>{% endif %}
+      {% else %}
+        <div class="login-hint">想推文嗎？<a href="{% url 'login' %}?next={{ request.path }}">登入</a> 或 <a href="{% url 'signup' %}">註冊</a> 後就能參與討論。</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside class="article-side">
+    <section class="card">
+      <h3 class="card-title">關於 {{ post.board.name }}</h3>
+      <p><strong>{{ post.board.zh_name }}</strong></p>
+      <p class="muted small">{{ post.board.description }}</p>
+      <a href="{{ post.board.get_absolute_url }}" class="btn btn-ghost btn-block btn-sm">進入看板</a>
+    </section>
+    <section class="card">
+      <h3 class="card-title">同板最新文章</h3>
+      {% for r in related %}<a href="{{ r.get_absolute_url }}" class="recent-item"><span class="recent-title">[{{ r.prefix }}] {{ r.title }}</span></a>{% empty %}<p class="muted small">沒有其他文章</p>{% endfor %}
+    </section>
+  </aside>
+</div>
+{% endblock %}
+
+{% block fab %}<a href="#commentBox" class="fab" aria-label="推文">✎<span>推文</span></a>{% endblock %}

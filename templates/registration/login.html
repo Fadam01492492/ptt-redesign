@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}會員登入｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="auth-card card">
+  <h1>會員登入</h1>
+  <p class="muted small">登入後可收藏看板、推文、發文，首頁會變成你的個人儀表板。</p>
+  {% if form.errors %}<div class="alert">帳號或密碼錯誤，請再試一次。</div>{% endif %}
+  <form method="post" class="stack-form">{% csrf_token %}
+    <label class="field"><span>帳號</span><input type="text" name="username" autocomplete="username" required autofocus value="{{ form.username.value|default:'' }}"></label>
+    <label class="field"><span>密碼</span>
+      <div class="pw-wrap"><input type="password" name="password" autocomplete="current-password" required id="pw"><button type="button" class="pw-toggle" data-target="pw">顯示</button></div>
+    </label>
+    <input type="hidden" name="next" value="{{ next|default:'/' }}">
+    <button class="btn btn-primary btn-block">登入</button>
+  </form>
+  <p class="auth-switch">還沒有帳號？<a href="{% url 'signup' %}">立即註冊</a></p>
+  <div class="demo-hint">
+    <strong>示範測試帳號</strong>
+    <span>帳號 <code>testuser</code>　密碼 <code>Test1234!</code></span>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% load forum_extras %}
+{% if page.has_other_pages %}
+<nav class="pagination">
+  {% if page.has_previous %}<a href="{% qs page=page.previous_page_number %}">‹ 上一頁</a>{% endif %}
+  <span>第 {{ page.number }} / {{ page.paginator.num_pages }} 頁</span>
+  {% if page.has_next %}<a href="{% qs page=page.next_page_number %}">下一頁 ›</a>{% endif %}
+</nav>
+{% endif %}

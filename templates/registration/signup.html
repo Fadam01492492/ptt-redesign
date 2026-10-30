@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}註冊會員｜批踢踢 Redesign{% endblock %}
+{% block content %}
+<div class="auth-card card">
+  <h1>註冊會員</h1>
+  <p class="muted small">只要帳號和密碼，30 秒完成註冊。</p>
+  <form method="post" class="stack-form">{% csrf_token %}
+    {% for field in form %}
+      <label class="field"><span>{{ field.label }}</span>{{ field }}
+        {% if field.errors %}<em class="error small">{{ field.errors|striptags }}</em>{% elif field.name == 'password1' %}<em class="muted small">至少 8 碼，不能全是數字，也不能太常見</em>{% endif %}
+      </label>
+    {% endfor %}
+    <button class="btn btn-primary btn-block">建立帳號</button>
+  </form>
+  <p class="auth-switch">已經有帳號？<a href="{% url 'login' %}">登入</a></p>
+</div>
+{% endblock %}
